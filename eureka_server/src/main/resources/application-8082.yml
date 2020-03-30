@@ -1,0 +1,25 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: eureka_server
+eureka:
+  client:
+    register-with-eureka: true # 是否将自己注册到Eureka服务中，如果本身就是server可以选择不注册
+    fetch-registry: true  #是否从Eureka中获取注册信息
+    service-url: #客户端与Eureka服务端进行交互的地址
+      defaultZone: http://localhost:8080/eureka/,http://localhost:8081/eureka/
+
+  server:
+    enable-self-preservation: false #自我保护功能
+    eviction-interval-timer-in-ms: 4000 #剔除时间间隔，单位毫秒
+  instance:
+    lease-renewal-interval-in-seconds: 10 #服务和注册中心的心跳间隔时间，默认为30s
+    lease-expiration-duration-in-seconds: 15 #服务和注册中心的心跳超时时间，默认为90s
+    prefer-ip-address: true #使用ip注册
+    instance-id: ${spring.cloud.client.ip-address}:${server.port} #实例名称：ip:port
+#正常情况下，服务会每隔30秒向注册中心发送心跳以续约自己的信息。
+#当一个服务异常down掉后，90s之后注册中心才会知道这个服务不可用了。
+#在此期间，依旧会把这个服务当成正常服务。ribbon调用仍会把请求转发到这个服务上。
+#为了避免这段期间出现无法提供服务的情况，要开启ribbon的重试功能，去进行其它服务提供者的重试。
+#注意：开启重试机制要考虑操作的幂等性，不然会很危险！

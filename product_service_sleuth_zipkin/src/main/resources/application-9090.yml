@@ -1,0 +1,60 @@
+server:
+  port: 9090
+spring:
+  application:
+    name: product-service-sleuth-zipkin
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/cloud?serverTimezone=UTC
+    username: root
+    password: root
+  jpa:
+    database: MySQL
+    show-sql: true
+    open-in-view: true
+    hibernate:
+      ddl-auto: none
+  #修改zipkin使用rabbitmq采集数据
+  zipkin:
+#    base-url: http://127.0.0.1:9411/  #server的请求地址
+    sender:
+#      type: web #数据的传输方式 , 已http的形式向server端发送数据
+      type: rabbit #向rabbitmq中发送消息
+  sleuth:
+    sampler:
+      probability: 1 #采样比
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener: # 这里配置了重试策略
+      direct:
+        retry:
+          enabled: true
+      simple:
+        retry:
+          enabled: true
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    metadata-map:
+      zone: jieyang
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    prefer-same-zone-eureka: true
+    availability-zones:
+      guangdong: jieyang,shantou
+    region: guangdong
+    service-url:
+      jieyang: http://localhost:8080/eureka/,http://localhost:8081/eureka/
+      shantou: http://localhost:8082/eureka/
+
+#sleuth链路追踪
+logging:
+  level:
+    root: info
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.cloud.sleuth: DEBUG

@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: api-zuul-server
+server:
+  port: 4836
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    metadata-map:
+      zone: jieyang #自己所处的zone
+  #    lease-expiration-duration-in-seconds: 10 #client发送心跳给server后，续约到期时间（默认90秒）
+  #    lease-renewal-interval-in-seconds: 5 #发送心跳续约间隔
+  client:
+    #    healthcheck: true #开启健康检查
+    register-with-eureka: true
+    fetch-registry: true
+    prefer-same-zone-eureka: true #优先调用相同zone中的实例
+    region: guangdong #自己所处的region
+    availability-zones:
+      guangdong: jieyang,shantou #region内可用的zone
+    service-url: #顺序跟上面一样
+      jieyang: http://localhost:8080/eureka/,http://localhost:8081/eureka/
+      shantou: http://localhost:8082/eureka/
+
+#zuul:
+#  routes:
+    #第一种
+#    hhh-server: #路由id随便写
+#      path: /order-server/**
+#      url: http://127.0.0.1:7070
+    #第二种 微服务名称: 自定义请求路径
+#    order-server: /abc-server/**
+    #第三种，默认路由配置，如果当前的微服务名称 order-server , 默认的请求映射路径 /order-server/**

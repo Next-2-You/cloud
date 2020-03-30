@@ -1,0 +1,25 @@
+server:
+  port: 9999 #服务端口
+spring:
+  application:
+    name: stream_consumer #指定服务名
+  rabbitmq:
+    addresses: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+  cloud:
+    stream:
+      instanceCount: 2  #消费者总数
+      instanceIndex: 1  #当前消费者的索引
+      bindings:
+        input: #内置的获取消息的通道 , 从cycong-default中获取消息
+          destination: cycong-default
+        myinput:
+          destination: cycong-custom-producer
+          group: group1
+          consumer:
+            partitioned: true  #开启分区支持
+      binders:
+        defaultRabbit:
+          type: rabbit

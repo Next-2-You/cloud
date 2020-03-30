@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: order-server-sentinel-feign
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/cloud?serverTimezone=UTC
+    username: root
+    password: root
+  jpa:
+    database: MySQL
+    show-sql: true
+    open-in-view: true
+    hibernate:
+      ddl-auto: none
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8080   #sentinel控制台的请求地址
+server:
+  port: 4043
+
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    metadata-map:
+      zone: jieyang #自己所处的zone
+#    lease-expiration-duration-in-seconds: 10 #client发送心跳给server后，续约到期时间（默认90秒）
+#    lease-renewal-interval-in-seconds: 5 #发送心跳续约间隔
+  client:
+#    healthcheck: true #开启健康检查
+    register-with-eureka: true
+    fetch-registry: true
+    prefer-same-zone-eureka: true #优先调用相同zone中的实例
+    region: guangdong #自己所处的region
+    availability-zones:
+      guangdong: jieyang,shantou #region内可用的zone
+    service-url: #顺序跟上面一样
+      jieyang: http://localhost:8080/eureka/,http://localhost:8081/eureka/
+      shantou: http://localhost:8082/eureka/
+
+#激活sentinel的支持
+feign:
+  sentinel:
+    enabled: true

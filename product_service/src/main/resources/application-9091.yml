@@ -1,0 +1,40 @@
+server:
+  port: 9091
+spring:
+  application:
+    name: product-service
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/cloud?serverTimezone=UTC
+    username: root
+    password: root
+  jpa:
+    database: MySQL
+    show-sql: true
+    open-in-view: true
+    hibernate:
+      ddl-auto: none
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    metadata-map:
+      zone: jieyang
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    prefer-same-zone-eureka: true
+    availability-zones:
+      guangdong: jieyang,shantou
+    region: guangdong
+    service-url:
+      jieyang: http://localhost:8080/eureka/,http://localhost:8081/eureka/
+      shantou: http://localhost:8082/eureka/
+
+#feign整合了hystrix
+#feign:
+#  hystrix:
+#    enabled: true
+
+

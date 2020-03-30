@@ -1,0 +1,39 @@
+server:
+  port: 10001
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/GithubStudy01/config_repository.git
+#  post访问服务端底层使用中间件更新微服务
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: bus-refresh
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    metadata-map:
+      zone: jieyang
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    prefer-same-zone-eureka: true
+    availability-zones:
+      guangdong: jieyang,shantou
+    region: guangdong
+    service-url:
+      jieyang: http://localhost:8080/eureka/,http://localhost:8081/eureka/
+      shantou: http://localhost:8082/eureka/

@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: api-gateway-sleuth-zipkin-server
+  redis:
+    host: 114.55.106.11
+    database: 0
+    port: 6379
+    password: root
+  cloud:
+    gateway:
+      routes:
+        - id: abc
+          uri: lb://order-service-sleuth-zipkin
+          predicates:
+            - Path=/abc/**
+          filters:
+            - RewritePath=/abc/(?<segment>.*), /$\{segment}
+  #修改zipkin使用rabbitmq采集数据
+  zipkin:
+    base-url: http://127.0.0.1:9411/  #server的请求地址
+    sender:
+      type: web #数据的传输方式 , 已http的形式向server端发送数据
+#      type: rabbit #向rabbitmq中发送消息
+  sleuth:
+    sampler:
+      probability: 1 #采样比
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener: # 这里配置了重试策略
+      direct:
+        retry:
+          enabled: true
+      simple:
+        retry:
+          enabled: true
+server:
+  port: 4838
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    metadata-map:
+      zone: jieyang #自己所处的zone
+  #    lease-expiration-duration-in-seconds: 10 #client发送心跳给server后，续约到期时间（默认90秒）
+  #    lease-renewal-interval-in-seconds: 5 #发送心跳续约间隔
+  client:
+    #    healthcheck: true #开启健康检查
+    register-with-eureka: true
+    fetch-registry: true
+    prefer-same-zone-eureka: true #优先调用相同zone中的实例
+    region: guangdong #自己所处的region
+    availability-zones:
+      guangdong: jieyang,shantou #region内可用的zone
+    service-url: #顺序跟上面一样
+      jieyang: http://localhost:8080/eureka/,http://localhost:8081/eureka/
+      shantou: http://localhost:8082/eureka/
+
+#sleuth链路追踪
+logging:
+  level:
+    root: info
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.cloud.sleuth: DEBUG

@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: api-gateway-server
+  redis:
+    host: 114.55.106.11
+    database: 0
+    port: 6379
+    password: root
+  cloud:
+    gateway:
+      routes:
+        - id: hhh
+          uri: lb://order-server-hystrix-feign
+          predicates:
+#          - Path=/order/**
+#          如果想要带前缀进行访问，可以使用路径重写
+          - Path=/abc/**
+          filters: #配置路由过滤器   http://localhost:4836/abc/order/port   -->   http://127.0.0.1:xxx/order/port
+          - RewritePath=/abc/(?<segment>.*), /$\{segment} # 路径重写的过滤器  ,在yml中 $ 写为 $\
+#          如果带的前缀刚好等于微服务的名称，可以开启自动转发功能。
+#      http://localhost:4836/order-server-hystrix-feign/order/port
+        - id: www
+          uri: lb://order-server-hystrix-feign
+          predicates:
+          - Path=/www/**
+          filters:
+#          限流
+#         注意：如果开启限流，地址前缀一定不要和服务名一样，因为这样有可能走自动转发而达不到限流效果
+          - name: RequestRateLimiter
+            args:
+              # 使用SpEL从容器中获取对象
+              key-resolver: '#{@pathKeyResolver}'
+              # 令牌桶每秒填充平均速率
+              redis-rate-limiter.replenishRate: 1
+              # 令牌桶的上限
+              redis-rate-limiter.burstCapacity: 3
+          - RewritePath=/www/(?<segment>.*), /$\{segment}
+      discovery:
+        locator:
+          enabled: true #开启根据服务名称自动转发
+          lower-case-service-id: true #微服务名称已小写形式呈现
+
+
+
+server:
+  port: 4836
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    metadata-map:
+      zone: jieyang #自己所处的zone
+  #    lease-expiration-duration-in-seconds: 10 #client发送心跳给server后，续约到期时间（默认90秒）
+  #    lease-renewal-interval-in-seconds: 5 #发送心跳续约间隔
+  client:
+    #    healthcheck: true #开启健康检查
+    register-with-eureka: true
+    fetch-registry: true
+    prefer-same-zone-eureka: true #优先调用相同zone中的实例
+    region: guangdong #自己所处的region
+    availability-zones:
+      guangdong: jieyang,shantou #region内可用的zone
+    service-url: #顺序跟上面一样
+      jieyang: http://localhost:8080/eureka/,http://localhost:8081/eureka/
+      shantou: http://localhost:8082/eureka/
+
